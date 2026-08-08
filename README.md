@@ -54,6 +54,35 @@ pnpm build     # 创建生产构建
 pnpm start     # 启动生产构建
 ```
 
+## 海外部署
+
+生产部署采用 GitHub Actions 构建私有 GHCR 镜像、海外单机 Podman、Nginx + Certbot 和 blue/green 双端口切换：
+
+```text
+blue  -> 127.0.0.1:3101
+green -> 127.0.0.1:3102
+```
+
+首次部署的核心步骤：
+
+```bash
+# 二选一：Ubuntu/Debian 先启用 ufw；或已核对云防火墙后显式确认没有主机防火墙
+sudo apt-get update && sudo apt-get install -y ufw
+sudo ufw allow OpenSSH && sudo ufw --force enable
+sudo ./scripts/prod/01-setup-system.sh
+# sudo ALLOW_NO_HOST_FIREWALL=1 ./scripts/prod/01-setup-system.sh
+
+# 按详细手册创建 600 权限的 tideform.env 和 GHCR registry-auth.json
+sudo DOMAIN=store.example.com EMAIL=ops@example.com ./scripts/prod/02-setup-nginx.sh
+sudo ./scripts/prod/03-deploy-first.sh ghcr.io/OWNER/xsyshopify:TAG
+```
+
+日常发布使用 `04-deploy-blue-green.sh IMAGE`，回滚使用 `06-rollback.sh`。镜像必须带明确 tag 或 digest，脚本拒绝 `latest`；3101/3102 只绑定 loopback，不对公网开放。
+
+production 必须从受保护的 `main` 手动构建，使用 Actions Summary 输出的 `ghcr.io/OWNER/xsyshopify@sha256:...`，并先完成 Cosign keyless 签名验证；prototype 可以从功能分支构建并使用未重复发布的版本 tag。服务器只支持当前 workflow 构建的 `linux/amd64` 镜像。
+
+从零配置 GHCR 权限、服务器、TLS、环境门禁、发布、回滚、监控和清理，见 [海外单机部署与运维手册](./docs/deployment-guide.md)；脚本参数见 [生产部署脚本说明](./scripts/prod/README.md)。
+
 ## 主要路由
 
 | 路由 | 用途 |
@@ -106,6 +135,8 @@ docs/             设计、操作、策略、QA 和用户文档
 
 - [中文用户使用手册](./docs/user-guide.md)
 - [SEO/GEO 操作手册](./docs/seo-geo-operations-guide.md)
+- [海外单机部署与运维手册](./docs/deployment-guide.md)
+- [生产部署脚本说明](./scripts/prod/README.md)
 - [商店设计](./docs/plans/2026-08-08-tideform-furniture-storefront-design.md)
 - [实施计划与完成记录](./docs/plans/2026-08-08-tideform-furniture-storefront-implementation.md)
 - [SEO/GEO 策略](./docs/strategy/seo-geo-plan.md)
@@ -117,10 +148,11 @@ docs/             设计、操作、策略、QA 和用户文档
 
 截至 2026-08-08：
 
-- Vitest：16 个文件，83/83 通过
+- Vitest：19 个文件，105/105 通过
 - Playwright：桌面与移动端 12/12 通过
-- `pnpm lint`、`pnpm build` 和 `git diff --check` 通过
+- `pnpm lint`、`pnpm build`、Compose 渲染、生产 Shell/YAML、Markdown 链接和 `git diff --check` 通过；Next.js 构建生成 23 个路由
 - 独立复审：前端 98/100、SEO/GEO 96/100、视觉/UX 97/100
-- 三路复审均为 Critical 0、Important 0
+- 既有前端/SEO/GEO/视觉三路复审均为 Critical 0、Important 0
+- 部署正确性、安全供应链、运维文档三路最终复审均为 Critical 0、Important 0、Minor 0
 
 下一阶段是生产集成：确认供应商材料和商品记录，确定正式品牌与业务政策，连接 Shopify 和 Checkout，持久化 RFQ，并完成逐 SKU 的贸易、包装、运输和 landed cost 核对。

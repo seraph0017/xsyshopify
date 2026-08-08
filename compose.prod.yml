@@ -1,0 +1,38 @@
+services:
+  storefront:
+    image: ${IMAGE:?IMAGE is required; use an immutable tag or digest}
+    container_name: ${CONTAINER_NAME:-tideform-blue}
+    restart: always
+    ports:
+      - "127.0.0.1:${HOST_PORT:-3101}:3000"
+    env_file:
+      - ${ENV_FILE:-/opt/tideform/config/tideform.env}
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+      - /app/.next/cache:rw,noexec,nosuid,size=128m
+    pids_limit: 256
+    mem_limit: ${MEMORY_LIMIT:-1g}
+    cpus: ${CPU_LIMIT:-1.0}
+    stop_grace_period: 30s
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then(async response => { if (!response.ok || (await response.json()).status !== 'ok') process.exit(1) }).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"

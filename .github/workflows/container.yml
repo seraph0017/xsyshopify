@@ -1,0 +1,285 @@
+name: Build private deployment image
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Immutable release tag, for example 2026.08.08-1
+        required: true
+        type: string
+      site_mode:
+        description: SEO publication mode baked into static pages
+        required: true
+        default: prototype
+        type: choice
+        options:
+          - prototype
+          - production
+      site_url:
+        description: Production HTTPS origin; leave empty for prototype
+        required: false
+        type: string
+      approved_domain:
+        description: Production hostname without scheme; leave empty for prototype
+        required: false
+        type: string
+      evidence_gate:
+        description: Use approved only after production evidence is complete
+        required: false
+        type: string
+  push:
+    tags:
+      - "deploy-*"
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+concurrency:
+  group: xsyshopify-container-package
+  cancel-in-progress: false
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Resolve and validate image settings
+        id: config
+        shell: bash
+        env:
+          INPUT_IMAGE_TAG: ${{ inputs.image_tag }}
+          INPUT_SITE_MODE: ${{ inputs.site_mode }}
+          INPUT_SITE_URL: ${{ inputs.site_url }}
+          INPUT_APPROVED_DOMAIN: ${{ inputs.approved_domain }}
+          INPUT_EVIDENCE_GATE: ${{ inputs.evidence_gate }}
+          REPOSITORY_SITE_MODE: ${{ vars.SITE_MODE }}
+          REPOSITORY_SITE_URL: ${{ vars.SITE_URL }}
+          REPOSITORY_APPROVED_DOMAIN: ${{ vars.APPROVED_PRODUCTION_DOMAIN }}
+          REPOSITORY_EVIDENCE_GATE: ${{ vars.SITE_EVIDENCE_GATE }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            image_tag="${INPUT_IMAGE_TAG}"
+            site_mode="${INPUT_SITE_MODE}"
+            site_url="${INPUT_SITE_URL}"
+            approved_domain="${INPUT_APPROVED_DOMAIN}"
+            evidence_gate="${INPUT_EVIDENCE_GATE}"
+          else
+            image_tag="${GITHUB_REF_NAME#deploy-}"
+            site_mode="${REPOSITORY_SITE_MODE:-prototype}"
+            site_url="${REPOSITORY_SITE_URL}"
+            approved_domain="${REPOSITORY_APPROVED_DOMAIN}"
+            evidence_gate="${REPOSITORY_EVIDENCE_GATE}"
+          fi
+
+          reject_multiline() {
+            local name="$1" value="$2"
+            [[ "$value" != *$'\n'* && "$value" != *$'\r'* ]] || {
+              echo "${name} must be a single-line value" >&2
+              exit 1
+            }
+          }
+          reject_multiline image_tag "$image_tag"
+          reject_multiline site_mode "$site_mode"
+          reject_multiline site_url "$site_url"
+          reject_multiline approved_domain "$approved_domain"
+          reject_multiline evidence_gate "$evidence_gate"
+
+          [[ "${image_tag}" =~ ^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$ ]] || {
+            echo "invalid image tag" >&2
+            exit 1
+          }
+          [[ "${image_tag}" != "latest" ]] || {
+            echo "latest is not an immutable deployment tag" >&2
+            exit 1
+          }
+          [[ "${site_mode}" == "prototype" || "${site_mode}" == "production" ]] || {
+            echo "site_mode must be prototype or production" >&2
+            exit 1
+          }
+          if [[ "${site_mode}" == "production" ]]; then
+            [[ -n "${site_url}" ]] || { echo "production requires SITE_URL" >&2; exit 1; }
+            [[ -n "${approved_domain}" ]] || { echo "production requires APPROVED_PRODUCTION_DOMAIN" >&2; exit 1; }
+            [[ "${evidence_gate}" == "approved" ]] || { echo "production requires SITE_EVIDENCE_GATE=approved" >&2; exit 1; }
+            [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && "${GITHUB_REF}" == "refs/heads/main" ]] \
+              || { echo "production images must be built by workflow_dispatch from refs/heads/main" >&2; exit 1; }
+          elif [[ -n "${site_url}" || -n "${approved_domain}" || -n "${evidence_gate}" ]]; then
+            echo "prototype requires production-only fields to be empty" >&2
+            exit 1
+          fi
+
+          image_name="$(printf '%s' "${GITHUB_REPOSITORY_OWNER}/xsyshopify" | tr '[:upper:]' '[:lower:]')"
+          {
+            echo "image_name=${image_name}"
+            echo "image_tag=${image_tag}"
+            echo "site_mode=${site_mode}"
+            echo "site_url=${site_url}"
+            echo "approved_domain=${approved_domain}"
+            echo "evidence_gate=${evidence_gate}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Sign in to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
+
+      - name: Inspect immutable release tags
+        id: existing
+        shell: bash
+        env:
+          IMAGE_NAME: ghcr.io/${{ steps.config.outputs.image_name }}
+          RELEASE_TAG: ${{ steps.config.outputs.image_tag }}
+          SHA_TAG: sha-${{ github.sha }}
+          EXPECTED_SITE_MODE: ${{ steps.config.outputs.site_mode }}
+          EXPECTED_SITE_URL: ${{ steps.config.outputs.site_url }}
+          EXPECTED_APPROVED_DOMAIN: ${{ steps.config.outputs.approved_domain }}
+          EXPECTED_EVIDENCE_GATE: ${{ steps.config.outputs.evidence_gate }}
+        run: |
+          set -euo pipefail
+
+          digest_for_ref() {
+            local image_ref="$1" manifest error_file
+            manifest="$(mktemp)"
+            error_file="$(mktemp)"
+            if docker buildx imagetools inspect "${image_ref}" --raw > "${manifest}" 2> "${error_file}"; then
+              printf 'sha256:%s\n' "$(sha256sum "${manifest}" | cut -d ' ' -f 1)"
+              rm -f "${manifest}" "${error_file}"
+              return 0
+            fi
+            if grep -Eqi 'not found|manifest unknown' "${error_file}"; then
+              rm -f "${manifest}" "${error_file}"
+              return 1
+            fi
+            cat "${error_file}" >&2
+            rm -f "${manifest}" "${error_file}"
+            return 2
+          }
+
+          release_digest=""
+          sha_digest=""
+          digest_for_ref "${IMAGE_NAME}:${RELEASE_TAG}" > /tmp/release-digest && release_digest="$(cat /tmp/release-digest)" || status=$?
+          [[ "${status:-0}" -ne 2 ]] || exit 1
+          unset status
+          digest_for_ref "${IMAGE_NAME}:${SHA_TAG}" > /tmp/sha-digest && sha_digest="$(cat /tmp/sha-digest)" || status=$?
+          [[ "${status:-0}" -ne 2 ]] || exit 1
+
+          if [[ -z "${release_digest}" && -z "${sha_digest}" ]]; then
+            echo "digest=" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          if [[ -n "${release_digest}" && -n "${sha_digest}" && "${release_digest}" != "${sha_digest}" ]]; then
+            echo "release and SHA tags resolve to different digests; refusing recovery" >&2
+            exit 1
+          fi
+
+          existing_digest="${release_digest:-${sha_digest}}"
+          cosign verify \
+            --certificate-identity "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/.github/workflows/container.yml@${GITHUB_REF}" \
+            --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+            "${IMAGE_NAME}@${existing_digest}" >/dev/null
+          docker pull "${IMAGE_NAME}@${existing_digest}"
+          revision="$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "${IMAGE_NAME}@${existing_digest}")"
+          source="$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.source" }}' "${IMAGE_NAME}@${existing_digest}")"
+          [[ "${revision}" == "${GITHUB_SHA}" ]] || { echo "signed image revision does not match this commit" >&2; exit 1; }
+          [[ "${source}" == "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" ]] || { echo "signed image source does not match this repository" >&2; exit 1; }
+          while IFS='|' read -r label expected; do
+            actual="$(docker image inspect --format "{{ index .Config.Labels \"${label}\" }}" "${IMAGE_NAME}@${existing_digest}")"
+            [[ "${actual}" == "${expected}" ]] || {
+              echo "signed image ${label} does not match this workflow run" >&2
+              exit 1
+            }
+          done <<EOF
+          io.tideform.site-mode|${EXPECTED_SITE_MODE}
+          io.tideform.site-url|${EXPECTED_SITE_URL}
+          io.tideform.approved-production-domain|${EXPECTED_APPROVED_DOMAIN}
+          io.tideform.site-evidence-gate|${EXPECTED_EVIDENCE_GATE}
+          io.tideform.next-public-site-url|${EXPECTED_SITE_URL}
+          EOF
+
+          missing_tags=()
+          [[ -n "${release_digest}" ]] || missing_tags+=(--tag "${IMAGE_NAME}:${RELEASE_TAG}")
+          [[ -n "${sha_digest}" ]] || missing_tags+=(--tag "${IMAGE_NAME}:${SHA_TAG}")
+          if ((${#missing_tags[@]})); then
+            docker buildx imagetools create "${missing_tags[@]}" "${IMAGE_NAME}@${existing_digest}"
+          fi
+          echo "digest=${existing_digest}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build and push canonical digest
+        if: steps.existing.outputs.digest == ''
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          pull: true
+          platforms: linux/amd64
+          outputs: type=image,name=ghcr.io/${{ steps.config.outputs.image_name }},push-by-digest=true,name-canonical=true,push=true
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          build-args: |
+            SITE_MODE=${{ steps.config.outputs.site_mode }}
+            SITE_URL=${{ steps.config.outputs.site_url }}
+            APPROVED_PRODUCTION_DOMAIN=${{ steps.config.outputs.approved_domain }}
+            SITE_EVIDENCE_GATE=${{ steps.config.outputs.evidence_gate }}
+            NEXT_PUBLIC_SITE_URL=${{ steps.config.outputs.site_url }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=max
+          sbom: true
+
+      - name: Sign image digest with GitHub OIDC
+        if: steps.existing.outputs.digest == ''
+        shell: bash
+        env:
+          IMAGE_NAME: ghcr.io/${{ steps.config.outputs.image_name }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "${IMAGE_NAME}@${IMAGE_DIGEST}"
+
+      - name: Promote signed digest to immutable release tags
+        if: steps.existing.outputs.digest == ''
+        shell: bash
+        env:
+          IMAGE_NAME: ghcr.io/${{ steps.config.outputs.image_name }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+          RELEASE_TAG: ${{ steps.config.outputs.image_tag }}
+          SHA_TAG: sha-${{ github.sha }}
+        run: |
+          docker buildx imagetools create \
+            --tag "${IMAGE_NAME}:${RELEASE_TAG}" \
+            --tag "${IMAGE_NAME}:${SHA_TAG}" \
+            "${IMAGE_NAME}@${IMAGE_DIGEST}"
+
+      - name: Record deployment digest
+        shell: bash
+        env:
+          IMAGE_NAME: ghcr.io/${{ steps.config.outputs.image_name }}
+          IMAGE_DIGEST: ${{ steps.existing.outputs.digest || steps.build.outputs.digest }}
+          SITE_MODE: ${{ steps.config.outputs.site_mode }}
+          SIGNING_IDENTITY: ${{ github.server_url }}/${{ github.repository }}/.github/workflows/container.yml@${{ github.ref }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### Deployment image"
+            echo '```text'
+            echo "${IMAGE_NAME}@${IMAGE_DIGEST}"
+            echo '```'
+            if [[ "${SITE_MODE}" == "production" ]]; then
+              echo "Production deployment must use this digest reference."
+            else
+              echo "Prototype image: keep noindex enabled and deploy this immutable digest or release tag."
+            fi
+            echo "Signature check: cosign verify --certificate-identity '${SIGNING_IDENTITY}' --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' ${IMAGE_NAME}@${IMAGE_DIGEST}"
+          } >> "${GITHUB_STEP_SUMMARY}"

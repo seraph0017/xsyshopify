@@ -252,7 +252,7 @@ find scripts/prod -type f -name '*.sh' -print0 | xargs -0 -n1 bash -n
 在可用的 Docker 或 Podman 环境运行：
 
 ```bash
-IMAGE=ghcr.io/example/xsyshopify:test docker compose -f compose.prod.yml config
+ENV_FILE=.env.example IMAGE=ghcr.io/example/xsyshopify:test docker compose -f compose.prod.yml config
 docker build -t xsyshopify:prototype .
 docker run --rm -d --name xsyshopify-deploy-test -p 127.0.0.1:3199:3000 xsyshopify:prototype
 ```
@@ -291,3 +291,40 @@ Expected: 桌面与移动端既有流程通过。
 
 提交部署代码和文档，推送 `feat/storefront`，核对本地/远端 HEAD；更新项目交接与 Session Digest，执行 memory consolidate 和 Vault 本地快照。
 
+## Completion Record
+
+完成日期：2026-08-08。
+
+### 已交付
+
+- Next.js standalone 多阶段镜像、固定 Node/pnpm、非 root runner、健康检查、只读运行和 publication labels。
+- 私有 GHCR workflow：`linux/amd64` canonical digest-only 推送、Cosign keyless 签名、签名后 release/SHA tag 晋升、精确 Git ref 身份与安全重跑门禁。
+- 海外 x86_64 Linux 的 Podman + Nginx/Certbot blue/green 脚本；blue=`127.0.0.1:3101`、green=`127.0.0.1:3102`。
+- active=`restart-policy=always`、rollback=`restart-policy=no` 的重启恢复状态机，部署/回滚锁、参数边界、排空、事务切流和失败恢复。
+- 中文 README、部署运维手册、脚本说明、环境变量示例和文档索引。
+
+### 最终验证
+
+- `pnpm test`：19 个测试文件，105/105 通过。
+- `pnpm lint`：通过。
+- `pnpm build`：通过，生成 23 个 App Router 路由。
+- `pnpm test:e2e`：desktop/mobile Chromium 12/12 通过。
+- 部署定向测试：2 个文件，21/21 通过。
+- 全部 `scripts/prod/*.sh` 通过 `bash -n`；workflow 通过 Ruby YAML parser 和 Actionlint 1.7.7。
+- `ENV_FILE=.env.example IMAGE=... docker compose -f compose.prod.yml config` 通过。
+- 49 个 Markdown 相对链接全部存在；`git diff --check` 通过。
+- 真实 `linux/amd64` Docker 镜像构建和 Compose 运行通过：架构 `amd64`、用户 `nextjs`、`restart=always`、只读根文件系统、绑定 `127.0.0.1:32991`、prototype smoke 通过、Docker health=`healthy`、镜像 label `io.tideform.site-mode=prototype`。
+- 渲染后的 Nginx 配置已使用 `nginx:1.28-alpine` 执行 `nginx -t`，结果通过。
+
+### 最终复审
+
+- 部署正确性：Critical 0 / Important 0 / Minor 0。
+- 安全与供应链：Critical 0 / Important 0 / Minor 0。
+- 运维与中文文档：Critical 0 / Important 0 / Minor 0。
+
+### 上线前置
+
+- 在 GitHub `main` 首次运行真实 private GHCR workflow，核对 canonical digest、Cosign 签名、release/SHA tags 和 Actions Summary。
+- 在运维工作站完成私有 GHCR 登录和 `cosign verify`，把精确 digest 记入服务器 production 环境。
+- 在目标海外服务器完成 DNS、云/主机防火墙、Let's Encrypt、首次部署、外部 smoke、reboot 和 rollback 演练。
+- 正式品牌、主体、政策、材料与逐商品 evidence 未齐前继续使用 prototype 门禁。

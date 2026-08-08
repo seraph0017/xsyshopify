@@ -8,6 +8,8 @@ node_modules/
 dist/
 build/
 coverage/
+test-results/
+*.tsbuildinfo
 
 .playwright-cli/
 tmp/

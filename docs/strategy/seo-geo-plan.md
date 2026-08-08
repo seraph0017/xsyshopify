@@ -1,5 +1,7 @@
 # TIDEFORM SEO / GEO 实施方案
 
+本文件负责策略、主题和证据模型。逐步执行、平台提交、模板、监测与排障见 [SEO/GEO 操作手册](../seo-geo-operations-guide.md)。
+
 ## 1. 目标与事实边界
 
 本方案服务于“标准家具在线购买 + 尺寸/颜色/配置/项目定制 RFQ”的北美家具站。产品是铝型材框架与海洋级板材共同构成的成品或模块化家具，不以裸铝型材、连接件或工业框架为主要商品。
@@ -86,7 +88,7 @@ SEO 目标：让有明确家具类型、空间、尺寸、材料和定制意图�
 - `SITE_MODE` 缺失或非法时 fail closed 为 `prototype`。
 - `prototype` 全站 `noindex,follow`、空 sitemap、零实体 JSON-LD。
 - `production` 需要合法 HTTPS `SITE_URL`、精确匹配的 `APPROVED_PRODUCTION_DOMAIN`、批准的站点身份和显式证据。
-- Search、购物车状态、RFQ confirmation 和筛选参数页可抓取但 `noindex,follow`，canonical 指向干净路由，不进 sitemap。
+- Search、购物车状态、RFQ confirmation 和带非跟踪查询参数的目录页可抓取但 `noindex,follow`，canonical 指向干净路由，不进 sitemap；只含跟踪参数的目录页不会触发该 noindex。
 - `robots.txt` 只阻止 `/api/`，不依靠 robots 隐藏敏感内容。
 
 生产发布闸门分层：
@@ -94,12 +96,14 @@ SEO 目标：让有明确家具类型、空间、尺寸、材料和定制意图�
 | 层级 | 需要的证据 | 通过后可发布 |
 | --- | --- | --- |
 | 站点 | 正式品牌、销售主体关系、域名、公开联系渠道、政策 | `Organization`、`WebSite`、首页索引 |
-| SKU | 稳定 SKU、版本、尺寸、材料/饰面、图片权利、负责人、证据 ID | PDP sitemap、`Product` |
+| SKU | 稳定 SKU、版本、尺寸、材料/饰面、图片权利、负责人、证据 ID | PDP sitemap、基础 Schema.org `Product` |
 | Offer | Shopify 真实市场、价格、币种、库存、checkout、税费/配送状态 | `Offer`、Merchant feed |
 | 内容 | 真实作者/审核者、来源、发布日期、修改日期、批准状态 | Guide sitemap、`Article` |
 | 服务 | 已核实定制范围、地区、流程、主体、限制 | `Service` |
 
-上表是完整生产目标。当前代码已实现站点身份、SKU/Product 和内容实体门禁；`Service` 复用内容实体证据。Offer/交易证据类型尚未实现，当前始终省略 `Offer`，在真实 Shopify 市场、价格、币种、库存和 Checkout 校验接入前不得启用 commerce Schema 或 Merchant feed。
+上表是完整生产运营目标，不等同于当前运行时字段校验。当前 `Product.evidence` 门禁校验基础 evidence、图纸版本、尺寸版本、材料批准和图片权利；页面的 `partNumber` 会写入 `Product.sku`，但当前门禁没有单独校验其稳定性或非空值。代码已实现站点身份、Product 和内容实体门禁；`Service` 复用内容实体 evidence。Offer/交易 evidence 类型尚未实现，当前始终省略 `Offer`。
+
+因此，现有 `Product` 只作为 Schema.org 语义标记，不含 Google Product snippet 所需的 `offers`、`review` 或 `aggregateRating`，当前不具备商品富结果资格。等真实 Shopify 市场、价格、币种、库存、Checkout 或真实评价证据接入并增加门禁后，再验证 Product 富结果和 Merchant feed。
 
 Fixture、AI 概念图、临时品牌、供应商待确认材料、原型价格和未连接库存不得进入生产 Schema、Merchant Center 或广告落地页。
 
@@ -107,9 +111,9 @@ Fixture、AI 概念图、临时品牌、供应商待确认材料、原型价格�
 
 - 每个可索引页有唯一 title、description、canonical、Open Graph、一个 H1。
 - PDP title 优先“产品名 + 家具类型”；材料和指南页优先回答问题，不堆品牌词。
-- `/products?category=...&width=...&panel=...` 统一 `noindex,follow`，canonical 到 `/products`。
+- `/products` 带任意非空、非跟踪查询参数时使用 `noindex,follow`，canonical 到 `/products`；只含跟踪参数时不会触发该 noindex，canonical 仍到 `/products`。
 - 某个分类只有在有独立搜索需求、独立正文、足够商品和稳定内部链接时，才建立干净静态路由。
-- `utm_*`、`gclid`、`fbclid` 从 canonical 丢弃；站内链接不携带追踪参数。
+- 当前跟踪参数白名单为 `utm_source`、`utm_medium`、`utm_campaign`、`utm_content`、`utm_term`、`gclid`、`fbclid`、`msclkid`；canonical 丢弃这些参数，站内链接不携带跟踪参数。
 - sitemap 只列 200、canonical、自索引、通过证据闸门的 URL，`lastmod` 来自真实内容记录。
 
 ## 8. GEO 证据模型

@@ -1,34 +1,38 @@
-# TIDEFORM Documentation
+# TIDEFORM 文档索引
 
-This directory records the product boundary, implementation, operation, publication controls, go-to-market work, and verification for the TIDEFORM furniture storefront prototype.
+本目录记录 TIDEFORM 家具商店原型的产品边界、实现、操作、发布控制、营销策略和验证结果。
 
-## Use And Operation
+## 使用与操作
 
-- [Chinese user guide](./user-guide.md): catalog, PDP, cart, RFQ, search, accessibility, and release-gate operation.
-- [Repository README](../README.md): local setup, commands, routes, architecture, and current verification.
+- [中文用户使用手册](./user-guide.md)：目录、PDP、购物车、RFQ、搜索、辅助功能、发布门禁，以及 SEO/GEO 快速操作。
+- [SEO/GEO 操作手册](./seo-geo-operations-guide.md)：关键词与页面地图、内容制作、证据审核、生产发布、GSC/Bing 提交、GEO、监测和复盘的完整 SOP。
+- [仓库 README](../README.md)：本地启动、命令、路由、项目结构和当前验证状态。
 
-## Product And Implementation
+## 产品与实现
 
-- [Storefront design](./plans/2026-08-08-tideform-furniture-storefront-design.md): product position, experience model, information architecture, evidence rules, and acceptance criteria.
-- [Implementation plan](./plans/2026-08-08-tideform-furniture-storefront-implementation.md): completed workstream and final verification record.
+- [商店设计](./plans/2026-08-08-tideform-furniture-storefront-design.md)：产品定位、体验模型、信息架构、证据规则和验收标准。
+- [实施计划](./plans/2026-08-08-tideform-furniture-storefront-implementation.md)：已完成的实施任务和最终验证记录。
+- [中文 README 与 SEO/GEO 手册设计](./plans/2026-08-08-chinese-readme-seo-geo-manual-design.md)：本轮文档分层与验收标准。
 
-The working product definition is finished or configurable furniture made from an aluminum frame and marine-grade panel surfaces. The storefront does not sell bare aluminum profiles. `Marine-grade panel` remains a neutral term until the supplier approves the exact material and performance records.
+当前产品定义是由铝型材骨架与海洋级板材表面共同构成的成品或可配置家具，不销售裸铝型材。`Marine-grade panel / 海洋级板材` 在供应商批准准确材料与性能记录前只作为中性工作名称。
 
-## Strategy
+## 策略
 
-- [SEO/GEO plan](./strategy/seo-geo-plan.md): route intent, structured content, evidence model, and publication gates.
-- [Marketing plan](./strategy/marketing-plan.md): audience, offer, channels, visual assets, and 90-day rollout.
-- [Measurement plan](./strategy/measurement-plan.md): funnel, event contract, data minimization, tooling, KPIs, and QA.
+- [SEO/GEO 策略](./strategy/seo-geo-plan.md)：页面意图、结构化内容、证据模型和发布门禁；负责“为什么做、做什么”。
+- [90 天营销方案](./strategy/marketing-plan.md)：受众、Offer、渠道、视觉资产和阶段推进。
+- [测量与分析方案](./strategy/measurement-plan.md)：漏斗、事件契约、数据最小化、工具、KPI 和 QA。
 
-## Quality
+SEO/GEO 的日常执行以操作手册为准，策略取舍以策略文档为准，代码和测试是当前发布行为的最终事实源。
 
-- [Fidelity ledger](./qa/fidelity-ledger.md): reference comparisons, intentional deviations, responsive checks, automated verification, and independent review results.
+## 质量
 
-## Production Inputs Still Required
+- [视觉一致性台账](./qa/fidelity-ledger.md)：参考对比、主动偏差、响应式检查、自动化验证和独立复审结果。
 
-1. Supplier-approved panel substrate, thickness, finish, edges, care, performance, intended environment, and certifications.
-2. Approved aluminum alloy/finish, connectors, hardware, dimensions, packaging, assembly, anchoring, and image rights for each SKU.
-3. Final brand, legal seller, public contact details, policies, domain, and content owners.
-4. Real Shopify products, variants, prices, inventory, markets, Checkout, tax, shipping, and return behavior.
-5. Persistent RFQ storage, attachment storage, notification, ownership, quote, approval, and order workflows.
-6. SKU-level HTS, Section 232, AD/CVD scope, packaging, long-item freight, and landed-cost review.
+## 生产前仍需提供
+
+1. 供应商批准的板材基材、厚度、饰面、封边、护理、性能、适用环境和认证。
+2. 每个 SKU 的铝合金/饰面、连接件、五金、尺寸、包装、组装、锚固和图片权利。
+3. 正式品牌、销售主体、公开联系信息、政策、域名和内容负责人。
+4. 真实 Shopify 商品、变体、价格、库存、市场、Checkout、税费、运输和退换行为。
+5. RFQ 持久化、附件存储、通知、负责人、报价、审批和订单流程。
+6. 逐 SKU 的 HTS、Section 232、AD/CVD scope、包装、长件运输和 landed cost 核对。

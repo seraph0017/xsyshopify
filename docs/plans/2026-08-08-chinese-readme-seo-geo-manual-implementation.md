@@ -93,3 +93,11 @@
 2. 推送 `feat/storefront` 到 `origin`，核对本地与远端 HEAD。
 3. 更新 Obsidian 项目交接和 Session Digest，并执行 memory consolidate。
 4. 运行 Vault 本地快照；保留远端非快进状态，不执行强推。
+
+## Completion Record
+
+- 2026-08-08：Tasks 1-4 已完成。根 README 已中文化；用户手册已增加快速指南；完整操作 SOP、文档导航和策略交叉链接已完成。
+- 首轮验证：`pnpm test` 通过 16 个文件、83 个测试；`pnpm lint`、`git diff --check`、Markdown 相对链接和首批官方 URL 可达性检查通过。
+- 首轮三路复审：中文可用性清零；技术和 SEO/GEO 复审指出 Product evidence、参数页 noindex、Product rich result、GSC property 和 Bing AI Performance 表述需修正。
+- 最终验证：`pnpm test` 通过 16 个文件、83 个测试；`pnpm lint`、`pnpm build`、`git diff --check` 通过；37 个 Markdown 相对链接全部存在；14 个官方来源均返回 HTTP 200。
+- 最终三路复审：技术准确性、SEO/GEO 官方规则、中文可用性与导航均为 Critical 0、Important 0、Minor 0。

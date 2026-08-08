@@ -1,38 +1,38 @@
-# TIDEFORM Storefront Prototype
+# TIDEFORM 家具商店原型
 
-TIDEFORM is a Next.js storefront prototype for finished and configurable furniture built from an aluminum frame and marine-grade panel surfaces. It is not a raw aluminum-extrusion catalog.
+TIDEFORM 是一个基于 Next.js 的家具独立站原型，展示由铝型材骨架与海洋级板材表面共同构成的成品或可配置家具。它不是裸铝型材目录。
 
-The prototype validates two customer paths:
+原型验证两条客户路径：
 
-- Standard sizes and finishes use a product-detail and local-cart flow.
-- Custom dimensions, colors, layouts, quantities, and delivery constraints use a structured RFQ flow.
+- 标准尺寸和饰面进入商品详情与本地购物车流程。
+- 定制尺寸、颜色、布局、数量和配送限制进入结构化 RFQ 询价流程。
 
-`Marine-grade panel` is a neutral working term. The substrate, thickness, finish system, edge treatment, care requirements, performance, outdoor suitability, load data, and certifications still require supplier evidence before production release.
+`Marine-grade panel / 海洋级板材` 是中性工作名称。具体基材、厚度、表面系统、封边、护理要求、性能、户外适用性、承载数据和认证仍需供应商提供证据后才能用于生产发布。
 
-## Current Scope
+## 当前范围
 
-- Homepage, catalog, URL-backed filters, search, and Living Collection
-- Six furniture product pages: console, sideboard, media console, shelving, work table, and bench
-- Standard configuration selection and a browser-local cart prototype
-- Materials, Custom Projects, Resources, and measuring guidance
-- RFQ form and local API validation with metadata-only attachment handling
-- Fail-closed SEO publication gates for prototype and production modes
-- Unit/component tests plus desktop and mobile Playwright coverage
+- 首页、家具目录、URL 筛选、站内搜索和 Living Collection
+- 6 个家具详情页：玄关桌、餐边柜、电视柜、置物架、工作桌和长凳
+- 标准配置选择与浏览器本地购物车原型
+- Materials、Custom Projects、Resources 和家具测量指南
+- RFQ 表单和本地 API 校验；附件只处理元数据
+- prototype/production 双模式的 fail-closed SEO 发布门禁
+- Vitest 单元/组件测试与桌面、移动端 Playwright 流程
 
-Shopify products, inventory, Checkout, payments, taxes, shipping, order creation, production RFQ storage, and notifications are not connected in this prototype.
+当前尚未连接 Shopify 商品、库存、Checkout、支付、税费、运输、订单创建、生产 RFQ 存储和通知。
 
-## Tech Stack
+## 技术栈
 
 - Next.js 16 App Router
-- React 19 and TypeScript
+- React 19 和 TypeScript
 - Lucide React
-- Vitest and Testing Library
+- Vitest 和 Testing Library
 - Playwright
 - pnpm 11
 
-## Run Locally
+## 本地运行
 
-Prerequisites: Node.js `22.22.2+` within major 22, `24.15+` within major 24, or major 26 and later, plus Corepack-enabled pnpm. Node 23 and 25 are outside the current jsdom engine range.
+前置条件：Node.js major 22 内的 `22.22.2+`、major 24 内的 `24.15+`，或 major 26 及以上版本，并启用 Corepack。Node 23 和 25 不在当前 jsdom engine 范围内。
 
 ```bash
 corepack enable
@@ -41,40 +41,40 @@ pnpm exec playwright install chromium
 pnpm dev
 ```
 
-Open <http://127.0.0.1:3000>. The Playwright configuration also uses port `3000` by default and can be pointed at another running instance with `PLAYWRIGHT_BASE_URL`.
+浏览器打开 <http://127.0.0.1:3000>。Playwright 默认也使用 `3000` 端口；如需复用其他运行实例，可设置 `PLAYWRIGHT_BASE_URL`。
 
-## Commands
+## 常用命令
 
 ```bash
-pnpm dev       # start the local development server
-pnpm lint      # run ESLint
-pnpm test      # run Vitest once
-pnpm test:e2e  # run desktop and mobile Playwright flows
-pnpm build     # create a production build
-pnpm start     # serve the production build
+pnpm dev       # 启动本地开发服务器
+pnpm lint      # 运行 ESLint
+pnpm test      # 单次运行 Vitest
+pnpm test:e2e  # 运行桌面和移动端 Playwright 流程
+pnpm build     # 创建生产构建
+pnpm start     # 启动生产构建
 ```
 
-## Main Routes
+## 主要路由
 
-| Route | Purpose |
+| 路由 | 用途 |
 | --- | --- |
-| `/` | Furniture-led homepage |
-| `/products` | Catalog, search, and filters |
-| `/products/[handle]` | Product details and standard/custom routing |
+| `/` | 家具导向首页 |
+| `/products` | 家具目录、搜索和筛选 |
+| `/products/[handle]` | 商品详情及标准/定制分流 |
 | `/collections/living` | Living Collection |
-| `/materials` | Frame-and-panel construction and evidence boundaries |
-| `/custom-projects` | Custom furniture process |
-| `/resources` | Planning, care, assembly, and support topics |
-| `/resources/measuring-for-furniture` | Measuring guide |
-| `/rfq` | Custom Project request form |
-| `/search` | Furniture and content search |
-| `/api/rfq` | Prototype RFQ validation endpoint |
+| `/materials` | 框架与板材构造及证据边界 |
+| `/custom-projects` | 定制家具流程 |
+| `/resources` | 测量、护理、组装和支持主题 |
+| `/resources/measuring-for-furniture` | 家具测量指南 |
+| `/rfq` | Custom Project 询价表单 |
+| `/search` | 家具与内容搜索 |
+| `/api/rfq` | 原型 RFQ 校验接口 |
 
-## Publication Modes
+## 发布模式
 
-The default mode is `prototype`. It deliberately emits site-wide `noindex,follow`, an empty sitemap, and no entity JSON-LD.
+默认模式为 `prototype`，会主动输出全站 `noindex,follow`、空 sitemap，并关闭全部实体 JSON-LD。原型不应提交到 Google Search Console、Bing Webmaster Tools 或 Merchant Center。
 
-Production publishing is fail-closed and requires all of the following environment gates:
+production 采用 fail-closed 发布，需要以下环境门禁：
 
 ```dotenv
 SITE_MODE=production
@@ -83,43 +83,44 @@ APPROVED_PRODUCTION_DOMAIN=store.tideform.com
 SITE_EVIDENCE_GATE=approved
 ```
 
-The hostname above illustrates the required public-domain format; replace it with the formally approved production hostname. `SITE_URL` must be a public HTTPS origin with no path, query, fragment, or port, and its hostname must exactly match `APPROVED_PRODUCTION_DOMAIN`.
+以上域名只用于说明公共域名格式，实际使用时必须替换为正式批准的生产域名。`SITE_URL` 必须是没有路径、查询参数、片段和端口的公共 HTTPS origin，主机名必须与 `APPROVED_PRODUCTION_DOMAIN` 完全一致。
 
-Environment gates plus a complete operator-verified site identity enable production mode, homepage indexing, and site-level schema. Content and product entities then pass their own evidence gates independently. Prototype fixtures remain excluded. Transaction evidence is not implemented yet, so the application emits no `Offer`; real price, currency, inventory, and Checkout validation must be added before commerce schema or feeds are released.
+环境门禁与完整的 operator-verified 站点身份共同开启 production、首页索引和站点级 Schema。内容和商品实体再分别通过自己的证据门禁；prototype fixture 始终排除。交易证据类型尚未实现，因此当前不输出 `Offer`；发布 commerce Schema 或 feed 前必须补齐真实价格、币种、库存、市场和 Checkout 校验。
 
-See [.env.example](./.env.example) and the [SEO/GEO plan](./docs/strategy/seo-geo-plan.md) for the full release contract.
+完整操作见 [.env.example](./.env.example)、[SEO/GEO 操作手册](./docs/seo-geo-operations-guide.md)和 [SEO/GEO 策略](./docs/strategy/seo-geo-plan.md)。
 
-## Project Structure
+## 项目结构
 
 ```text
-src/app/          App Router pages, metadata routes, and RFQ API
-src/components/   Storefront, catalog, cart, RFQ, and UI components
-src/lib/          Catalog fixtures, cart/RFQ logic, analytics, and SEO gates
-tests/e2e/        Desktop and mobile storefront flows
-public/images/    Furniture concepts, products, and lifestyle assets
-docs/             Design, operations, strategy, QA, and user documentation
+src/app/          App Router 页面、metadata 路由和 RFQ API
+src/components/   商店、目录、购物车、RFQ 和通用 UI 组件
+src/lib/          商品 fixture、购物车/RFQ 逻辑、分析和 SEO 门禁
+tests/e2e/        桌面与移动端商店流程
+public/images/    家具概念图、商品图和场景图
+docs/             设计、操作、策略、QA 和用户文档
 ```
 
-## Documentation
+## 文档
 
-Start with the [documentation index](./docs/README.md). Key references:
+从 [文档索引](./docs/README.md) 开始。主要资料：
 
-- [Chinese user guide](./docs/user-guide.md)
-- [Storefront design](./docs/plans/2026-08-08-tideform-furniture-storefront-design.md)
-- [Implementation plan and completion record](./docs/plans/2026-08-08-tideform-furniture-storefront-implementation.md)
-- [SEO/GEO plan](./docs/strategy/seo-geo-plan.md)
-- [Marketing plan](./docs/strategy/marketing-plan.md)
-- [Measurement plan](./docs/strategy/measurement-plan.md)
-- [Visual fidelity and review ledger](./docs/qa/fidelity-ledger.md)
+- [中文用户使用手册](./docs/user-guide.md)
+- [SEO/GEO 操作手册](./docs/seo-geo-operations-guide.md)
+- [商店设计](./docs/plans/2026-08-08-tideform-furniture-storefront-design.md)
+- [实施计划与完成记录](./docs/plans/2026-08-08-tideform-furniture-storefront-implementation.md)
+- [SEO/GEO 策略](./docs/strategy/seo-geo-plan.md)
+- [90 天营销方案](./docs/strategy/marketing-plan.md)
+- [测量与分析方案](./docs/strategy/measurement-plan.md)
+- [视觉一致性与复审台账](./docs/qa/fidelity-ledger.md)
 
-## Verified Baseline
+## 已验证基线
 
-As of 2026-08-08:
+截至 2026-08-08：
 
-- Vitest: 83/83 tests passed across 16 files
-- Playwright: 12/12 desktop and mobile tests passed
-- `pnpm lint`, `pnpm build`, and `git diff --check` passed
-- Independent reviews: frontend 98/100, SEO/GEO 96/100, visual/UX 97/100
-- Every review reported zero Critical and zero Important findings
+- Vitest：16 个文件，83/83 通过
+- Playwright：桌面与移动端 12/12 通过
+- `pnpm lint`、`pnpm build` 和 `git diff --check` 通过
+- 独立复审：前端 98/100、SEO/GEO 96/100、视觉/UX 97/100
+- 三路复审均为 Critical 0、Important 0
 
-The remaining work is production integration: confirm supplier material and product records, establish the final brand and business policies, connect Shopify and Checkout, persist RFQs, and complete SKU-level trade, packaging, shipping, and landed-cost review.
+下一阶段是生产集成：确认供应商材料和商品记录，确定正式品牌与业务政策，连接 Shopify 和 Checkout，持久化 RFQ，并完成逐 SKU 的贸易、包装、运输和 landed cost 核对。

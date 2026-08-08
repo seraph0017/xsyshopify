@@ -146,7 +146,7 @@ pnpm dev
 
 ### 图片能证明最终颜色和材料吗？
 
-不能。图片用于表达家具形态和空间方向。最终交付应以批准样品、供应商规格和生产文件为准。
+图片只用于表达家具形态和空间方向，不证明最终颜色或材料。最终交付应以批准样品、供应商规格和生产文件为准。
 
 ### 提交 Custom Project 后会自动下单吗？
 
@@ -181,8 +181,8 @@ pnpm dev
 
 - 站点身份通过后：首页可索引，并可输出 `Organization`、`WebSite`。
 - 内容实体通过后：对应目录、系列、材料、资源、定制或 RFQ 页面才可索引并输出其页面级 Schema。
-- 商品实体通过后：对应 PDP 才进入 sitemap 并输出 `Product`；未验证商品不会进入目录 `ItemList`。
-- 当前尚未实现交易证据类型或门禁，因此不输出 `Offer`；接入真实价格、币种、库存和 Checkout 时需补充交易证据校验后再发布 commerce Schema 或 feed。
+- 商品实体通过后：对应 PDP 才进入 sitemap，并输出基础 Schema.org `Product` 语义标记；未验证商品不会进入目录 `ItemList`。
+- 当前 `Product` 不含 `offers`、`review` 或 `aggregateRating`，因此不具备 Google Product snippet 富结果资格。接入真实价格、币种、库存和 Checkout，或真实评价证据后，需补充相应门禁，再验证 Product 富结果和 Merchant feed。
 
 ### 发布核验
 
@@ -190,4 +190,34 @@ pnpm dev
 2. 在 prototype 预览中检查页面 `<meta name="robots">` 为 `noindex,follow`。
 3. 打开 `/sitemap.xml`，确认 prototype 为空；production 只包含通过证据门禁的首页、内容页和商品页。
 4. 检查页面源代码中的 `application/ld+json`：prototype 应为 0；production 只能出现与当前实体证据对应的 Schema。
-5. 检查 canonical 使用干净正式域名；搜索、筛选和 RFQ confirmation 页面继续保持 `noindex,follow`，且不进入 sitemap。
+5. 检查 canonical 使用干净正式域名；`/search`、RFQ confirmation 和带非跟踪查询参数的目录页继续保持 `noindex,follow`，且不进入 sitemap。目录页只带 `utm_source`、`utm_medium`、`utm_campaign`、`utm_content`、`utm_term`、`gclid`、`fbclid` 或 `msclkid` 时不会触发该 noindex，但 canonical 仍指向干净的 `/products`。
+
+## 11. SEO/GEO 快速操作
+
+本节供商品、内容和站点运营人员快速执行。关键词研究、页面模板、证据台账、GSC/Bing 操作、AI crawler 规则、监测与排障见 [SEO/GEO 操作手册](./seo-geo-operations-guide.md)；方法论和主题矩阵见 [SEO/GEO 策略](./strategy/seo-geo-plan.md)。
+
+### 原型阶段
+
+1. 保持 `SITE_MODE=prototype`，不要向搜索引擎提交 sitemap。
+2. 收集正式品牌、主体、政策、供应商资料、SKU 规格、图片权利和内容负责人。
+3. 为每个页面明确一个主搜索意图，不使用未经验证的防水、户外、承重、认证、库存、交期和评价主张。
+4. 把尺寸、材料、适用范围、限制和更新时间写入可见 HTML，不只放在图片、PDF 或 JSON-LD 中。
+5. 对影响购买和使用的主张建立 evidence/claim 记录。
+
+### 上线前
+
+1. 完成站点身份、内容实体和商品实体 evidence；真实交易或评价数据接入前继续省略 `Offer`、`review` 和 `aggregateRating`。
+2. 设置正式 production 环境变量，运行 `pnpm test && pnpm lint && pnpm build`。
+3. 核对首页和已批准页面可索引，`/search`、带非跟踪查询参数的目录页和 RFQ confirmation 仍为 `noindex,follow`。
+4. 核对 `/robots.txt`、`/sitemap.xml`、canonical 和页面 JSON-LD；结构化数据必须与页面可见内容一致。
+5. 用公司账号创建并验证 Google Search Console property，再配置最小必要权限。Domain property 只填写域名，不带协议或路径，通过 DNS 验证并覆盖该域名的协议与子域；如需只看某个生产 HTTPS host，可另建 URL-prefix property。
+6. property 验证完成后，在公开预发布或生产 URL 上执行 Rich Results Test 和 Search Console URL Inspection。当前基础 `Product` 会因缺少 Product snippet 必需字段而不具备商品富结果资格；这不影响对其 Schema.org 语义结构和可见内容一致性的检查。
+
+### 上线后
+
+1. 在已验证的 Google Search Console property 中提交一次正式 `/sitemap.xml`。
+2. 在 Bing Webmaster Tools 验证站点并提交 sitemap；内容新增、更新或删除后可接入 IndexNow 通知。
+3. 首批只检查首页、目录、1-2 个代表 PDP、Materials、Measuring 和 Custom Projects，不批量请求索引所有 URL。
+4. 每周检查收录、抓取、结构化数据、品牌/非品牌查询和零结果站内搜索；Bing AI Performance 开放后，同时查看 citations、grounding queries、页面级引用活动和趋势。
+5. 每月复盘合格加购、RFQ 和内容辅助转化。
+6. AI 搜索可见性以可抓取、可引用、可核验的 HTML 为基础，不把 `llms.txt`、特殊 Schema 或单次问答结果当作收录或引用保证。

@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shopify 铝型材独立站准备方案</title>
+  <style>
+    :root {
+      --ink: #18212b;
+      --muted: #5a6875;
+      --line: #d8dee3;
+      --paper: #ffffff;
+      --soft: #f3f6f7;
+      --green: #176b55;
+      --green-soft: #e7f2ed;
+      --amber: #a65f00;
+      --amber-soft: #fff3df;
+      --red: #a83b32;
+    }
+
+    * { box-sizing: border-box; }
+
+    @page {
+      size: A4;
+      margin: 15mm 15mm 17mm;
+      @bottom-left {
+        content: "Shopify 铝型材独立站准备方案";
+        color: #76838e;
+        font-size: 8pt;
+      }
+      @bottom-right {
+        content: "第 " counter(page) " 页";
+        color: #76838e;
+        font-size: 8pt;
+      }
+    }
+
+    html { background: #e9edef; }
+
+    body {
+      margin: 0 auto;
+      max-width: 210mm;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Hiragino Sans GB", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 10.2pt;
+      line-height: 1.62;
+      letter-spacing: 0;
+    }
+
+    main { padding: 15mm; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: 30pt; line-height: 1.18; margin-bottom: 6mm; }
+    h2 {
+      font-size: 17pt;
+      line-height: 1.3;
+      margin: 0 0 5mm;
+      padding-bottom: 2.5mm;
+      border-bottom: 2px solid var(--ink);
+    }
+    h3 { font-size: 12pt; margin-bottom: 2mm; }
+    p { margin-bottom: 3mm; }
+
+    .cover {
+      min-height: 250mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+    }
+
+    .kicker {
+      display: inline-block;
+      margin-bottom: 12mm;
+      padding: 2mm 3.5mm;
+      background: var(--green-soft);
+      color: var(--green);
+      font-weight: 700;
+      font-size: 9pt;
+    }
+
+    .cover-rule {
+      width: 28mm;
+      height: 4px;
+      margin-bottom: 10mm;
+      background: var(--green);
+    }
+
+    .lead {
+      max-width: 155mm;
+      color: var(--muted);
+      font-size: 14pt;
+      line-height: 1.65;
+    }
+
+    .cover-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-top: 1px solid var(--line);
+      padding-top: 5mm;
+      color: var(--muted);
+      font-size: 9pt;
+    }
+    .cover-meta strong { display: block; color: var(--ink); font-size: 10pt; }
+
+    .page { page-break-before: always; }
+    .section { margin-bottom: 7mm; }
+    .keep-block { break-inside: avoid; }
+
+    .answer {
+      margin: 2mm 0 7mm;
+      padding: 6mm;
+      border-left: 5px solid var(--green);
+      background: var(--green-soft);
+    }
+    .answer .big { font-size: 18pt; font-weight: 800; line-height: 1.35; margin-bottom: 2mm; }
+
+    .warning {
+      margin: 5mm 0;
+      padding: 4mm 5mm;
+      border-left: 4px solid var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4mm;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      padding: 4.5mm;
+      break-inside: avoid;
+    }
+    .panel h3 { color: var(--green); }
+
+    ul, ol { margin: 1mm 0 4mm; padding-left: 5.5mm; }
+    li { margin-bottom: 1.2mm; }
+
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li { position: relative; padding-left: 7mm; margin-bottom: 2mm; }
+    .checklist li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 1.2mm;
+      width: 4mm;
+      height: 4mm;
+      border: 1.2px solid #84919a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2mm 0 5mm;
+      font-size: 9.2pt;
+      break-inside: avoid;
+    }
+    th, td { border: 1px solid var(--line); padding: 2.4mm 2.8mm; vertical-align: top; }
+    th { background: var(--soft); text-align: left; font-weight: 700; }
+
+    .tag {
+      display: inline-block;
+      padding: 0.5mm 2mm;
+      color: var(--green);
+      background: var(--green-soft);
+      font-size: 8.2pt;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tag.later { color: var(--amber); background: var(--amber-soft); }
+
+    .step {
+      display: grid;
+      grid-template-columns: 12mm 1fr;
+      gap: 3mm;
+      margin-bottom: 4mm;
+      break-inside: avoid;
+    }
+    .step-no {
+      width: 10mm;
+      height: 10mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--ink);
+      color: white;
+      font-weight: 800;
+    }
+    .step h3 { margin: 0 0 1mm; }
+    .step p { margin: 0; color: var(--muted); }
+
+    .cost {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .decision {
+      margin-top: 5mm;
+      padding: 5mm;
+      border: 2px solid var(--ink);
+      break-inside: avoid;
+    }
+    .decision strong { color: var(--red); }
+
+    .footnote { color: var(--muted); font-size: 8.5pt; }
+
+    @media screen {
+      body { box-shadow: 0 0 28px rgba(24, 33, 43, 0.12); }
+      main { min-height: 297mm; }
+    }
+
+    @media print {
+      html, body { background: white; }
+      body { max-width: none; }
+      main { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="cover">
+      <div>
+        <div class="kicker">项目启动说明 · 2026-08-07</div>
+        <div class="cover-rule"></div>
+        <h1>Shopify 铝型材<br>独立站准备方案</h1>
+        <p class="lead">面向北美市场的建站准备清单、系统边界与上线顺序。用于双方快速对齐：需要准备什么、哪些服务要购买，以及什么时候才需要云服务器。</p>
+      </div>
+      <div class="cover-meta">
+        <div><strong>首发市场</strong>美国</div>
+        <div><strong>建议模式</strong>标准品在线下单 + 定制询价</div>
+        <div><strong>建站周期</strong>资料齐全后约 2-4 周</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>先回答：需要云服务器吗？</h2>
+      <div class="answer">
+        <div class="big">基础 Shopify 独立站不需要另买云服务器。</div>
+        <p>Shopify 是托管式 SaaS。商品页面、购物车、结账、后台、订单、SSL 证书、CDN 和基础安全维护均由 Shopify 承担。启动阶段通常只需要购买 Shopify 套餐和域名。</p>
+      </div>
+
+      <table>
+        <thead><tr><th>需求</th><th>是否需要自建云服务器</th><th>处理方式</th></tr></thead>
+        <tbody>
+          <tr><td>普通商品展示、购物车和订单</td><td><span class="tag">不需要</span></td><td>Shopify 原生托管</td></tr>
+          <tr><td>域名、SSL、全球访问加速</td><td><span class="tag">不需要</span></td><td>域名绑定 Shopify，SSL/CDN 由平台处理</td></tr>
+          <tr><td>询价表、邮件、评价、基础营销</td><td><span class="tag">通常不需要</span></td><td>使用 Shopify App 或第三方 SaaS</td></tr>
+          <tr><td>复杂铝型材配置器、自动计算长度/加工/运费</td><td><span class="tag later">后期可能需要</span></td><td>自定义应用或独立后端</td></tr>
+          <tr><td>ERP、仓库、工厂 MES 深度接口</td><td><span class="tag later">后期可能需要</span></td><td>中间服务、私有 App 或云函数</td></tr>
+          <tr><td>大量 CAD 文件自动转换、报价和图纸处理</td><td><span class="tag later">后期可能需要</span></td><td>独立文件存储和计算服务</td></tr>
+        </tbody>
+      </table>
+
+      <div class="warning"><strong>建议：</strong>第一阶段不要买云服务器。先用 Shopify + 询价 App 把真实订单流程跑通；当手工报价成为明显瓶颈，再根据具体功能选云函数或服务器。</div>
+
+      <h2>启动阶段真正需要购买的服务</h2>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>必须</h3>
+          <ul>
+            <li>Shopify Basic 套餐</li>
+            <li>一个英文 `.com` 域名</li>
+            <li>企业域名邮箱</li>
+            <li>可用的收款服务</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>按需</h3>
+          <ul>
+            <li>付费主题</li>
+            <li>RFQ 询价和文件上传 App</li>
+            <li>评价、邮件营销和客服工具</li>
+            <li>复杂功能的定制开发</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <h2>一、开店与品牌资料</h2>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>公司与账号</h3>
+          <ul class="checklist">
+            <li>Shopify 注册邮箱</li>
+            <li>公司中英文名称和地址</li>
+            <li>营业执照及负责人身份资料</li>
+            <li>客服邮箱、电话或 WhatsApp</li>
+            <li>支付平台月费的信用卡</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>品牌与域名</h3>
+          <ul class="checklist">
+            <li>英文品牌名及可注册的 `.com` 域名</li>
+            <li>横版、方形和透明底 Logo</li>
+            <li>品牌颜色、字体和英文定位</li>
+            <li>英文公司介绍</li>
+            <li>工厂、切割、质检和包装实拍</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>二、产品资料</h2>
+      <p>首发建议只做 10-20 个核心 SKU。每个产品至少准备以下字段：</p>
+      <table>
+        <thead><tr><th>类别</th><th>需要准备的内容</th></tr></thead>
+        <tbody>
+          <tr><td>基础信息</td><td>英文名称、SKU、产品系列、应用场景、库存和交期</td></tr>
+          <tr><td>技术参数</td><td>截面尺寸、槽宽、合金/状态、表面处理、单位重量、截面图</td></tr>
+          <tr><td>长度与加工</td><td>标准长度、切割范围、公差、钻孔、攻牙、加工限制</td></tr>
+          <tr><td>定价</td><td>单价、数量阶梯价、切割费、加工费、最低订单额</td></tr>
+          <tr><td>物流数据</td><td>单件净重、包装后重量、包装尺寸、装箱数量</td></tr>
+          <tr><td>素材</td><td>白底图、细节图、截面尺寸图、场景图、包装图</td></tr>
+          <tr><td>工程文件</td><td>PDF、STEP、DXF，以及兼容配件和安装说明</td></tr>
+        </tbody>
+      </table>
+
+      <div class="decision">
+        <h3>首发交易规则</h3>
+        <p><strong>在线结账：</strong>样品包、连接件、固定长度短料。</p>
+        <p><strong>提交询价：</strong>长料、任意长度切割、钻孔/攻牙、整套框架和批量采购。</p>
+      </div>
+    </section>
+
+    <section class="page">
+      <h2>三、收款、物流与政策</h2>
+      <div class="section">
+        <h3>收款</h3>
+        <ul class="checklist">
+          <li>确定店铺经营主体和对公结算账户</li>
+          <li>开通 PayPal Business</li>
+          <li>选择 Shopify 支持的第三方信用卡收单</li>
+          <li>确认 USD 结算、手续费、拒付和退款流程</li>
+          <li>上线前完成一笔真实小额付款和退款</li>
+        </ul>
+        <p class="footnote">大陆主体通常不直接使用 Shopify Payments，需要第三方收单。店铺主体、收款主体、网站公司信息和银行资料应保持一致。</p>
+      </div>
+
+      <div class="section">
+        <h3>物流</h3>
+        <ul class="checklist">
+          <li>确定发货地、可配送地区和预计时效</li>
+          <li>准备每个 SKU 的包装后重量与尺寸</li>
+          <li>取得短料快递和长料货运报价</li>
+          <li>明确超长件、住宅地址和偏远地区附加费</li>
+          <li>确定税费由谁承担，以及 DDP/DAP 的页面表达</li>
+          <li>建立破损、补发、退件和物流索赔流程</li>
+        </ul>
+        <div class="warning">短料可以设置阶梯运费；长料、超重件和批量订单建议显示“提交货运询价”，避免系统自动报出错误低价。</div>
+      </div>
+
+      <div class="section">
+        <h3>政策页面</h3>
+        <div class="grid-2">
+          <ul class="checklist">
+            <li>Shipping Policy</li>
+            <li>Return &amp; Refund Policy</li>
+            <li>Privacy Policy</li>
+          </ul>
+          <ul class="checklist">
+            <li>Terms of Service</li>
+            <li>定制品取消与退货规则</li>
+            <li>税费和进口责任说明</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="keep-block">
+        <h2>四、网站页面与功能</h2>
+        <table>
+          <thead><tr><th>页面/功能</th><th>核心内容</th></tr></thead>
+          <tbody>
+            <tr><td>首页</td><td>真实产品、加工能力、交期、配送区域和主要应用</td></tr>
+            <tr><td>产品分类与详情</td><td>规格、价格、长度、库存、图纸、兼容配件和购买入口</td></tr>
+            <tr><td>应用场景</td><td>工作台、机器防护、设备机架、机器人围栏等实际方案</td></tr>
+            <tr><td>定制服务</td><td>切割、钻孔、攻牙、BOM 齐套和框架组装</td></tr>
+            <tr><td>RFQ 询价</td><td>规格、长度、数量、邮编、交期及 PDF/DXF/STEP/BOM 上传</td></tr>
+            <tr><td>技术资源</td><td>选型指南、CAD 下载、安装说明和常见问题</td></tr>
+            <tr><td>信任页面</td><td>公司介绍、工厂实拍、质检、包装和联系方式</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page">
+      <h2>五、建议的 Shopify 配置</h2>
+      <table>
+        <thead><tr><th>模块</th><th>启动配置</th><th>后期升级条件</th></tr></thead>
+        <tbody>
+          <tr><td>套餐</td><td>Shopify Basic</td><td>团队权限、费率或规模确有需求时升级</td></tr>
+          <tr><td>市场</td><td>美国、USD；加拿大只询价</td><td>税费和履约验证后开放更多市场</td></tr>
+          <tr><td>主题</td><td>免费或轻量付费主题</td><td>品牌和转化数据稳定后再深度定制</td></tr>
+          <tr><td>B2B</td><td>RFQ + Draft Order + 客户标签</td><td>大客户和分级价格复杂后再考虑 Plus</td></tr>
+          <tr><td>报价</td><td>表单、文件上传、人工核价</td><td>稳定询价量形成后开发自动配置器</td></tr>
+          <tr><td>分析</td><td>GA4、Search Console、Clarity</td><td>有稳定广告量后完善归因系统</td></tr>
+        </tbody>
+      </table>
+
+      <h2>六、实施顺序</h2>
+      <div class="step"><div class="step-no">1</div><div><h3>确定主体、品牌和域名</h3><p>明确谁经营、谁收款、网站使用什么英文品牌。</p></div></div>
+      <div class="step"><div class="step-no">2</div><div><h3>选首发产品</h3><p>只选一个客户场景、一个单位体系和 10-20 个 SKU。</p></div></div>
+      <div class="step"><div class="step-no">3</div><div><h3>整理商品资料</h3><p>完成英文参数、价格、照片、包装数据和 CAD 文件。</p></div></div>
+      <div class="step"><div class="step-no">4</div><div><h3>确定交易规则</h3><p>划分在线结账与 RFQ，确定运费、加工费、交期和售后。</p></div></div>
+      <div class="step"><div class="step-no">5</div><div><h3>搭建 Shopify</h3><p>完成主题、导航、产品页、政策页、询价和邮件通知。</p></div></div>
+      <div class="step"><div class="step-no">6</div><div><h3>接入支付和分析</h3><p>接通信用卡、PayPal、企业邮箱和基础数据分析。</p></div></div>
+      <div class="step"><div class="step-no">7</div><div><h3>测试后小流量上线</h3><p>测试支付、退款、不同邮编运费、移动端和 RFQ 全流程。</p></div></div>
+
+      <div class="keep-block">
+        <h2>七、启动预算参考</h2>
+        <table>
+          <thead><tr><th>项目</th><th class="cost">参考范围（USD）</th><th>备注</th></tr></thead>
+          <tbody>
+            <tr><td>Shopify、域名、邮箱和基础 App</td><td class="cost">300-1,200/年</td><td>具体取决于应用数量</td></tr>
+            <tr><td>主题和基础搭建</td><td class="cost">500-3,000</td><td>DIY 可降低，复杂定制另算</td></tr>
+            <tr><td>英文内容、产品图和 CAD 整理</td><td class="cost">1,000-5,000</td><td>取决于现有资料完整度</td></tr>
+            <tr><td>云服务器</td><td class="cost">0</td><td>基础版本不采购</td></tr>
+          </tbody>
+        </table>
+        <p class="footnote">以上仅为独立站建设侧预算，不包含产品库存、国际物流、报关、税费、广告和美国仓储。</p>
+      </div>
+    </section>
+
+    <section class="page">
+      <h2>上线验收清单</h2>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>内容与体验</h3>
+          <ul class="checklist">
+            <li>手机和电脑页面正常</li>
+            <li>产品规格、价格和图片准确</li>
+            <li>CAD 和技术文件可下载</li>
+            <li>搜索、筛选和导航可用</li>
+            <li>页面无断链和占位文字</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>交易与履约</h3>
+          <ul class="checklist">
+            <li>信用卡与 PayPal 可付款</li>
+            <li>真实退款测试完成</li>
+            <li>不同邮编运费测试完成</li>
+            <li>订单和发货邮件正常</li>
+            <li>缺货、取消和退货规则明确</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>询价流程</h3>
+          <ul class="checklist">
+            <li>RFQ 字段完整</li>
+            <li>PDF/DXF/STEP/BOM 可上传</li>
+            <li>询价邮件能到达负责人</li>
+            <li>Draft Order 付款链接可用</li>
+            <li>报价响应时间已约定</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>基础运营</h3>
+          <ul class="checklist">
+            <li>企业邮箱和客服渠道可用</li>
+            <li>GA4 和 Search Console 已接入</li>
+            <li>政策页面全部发布</li>
+            <li>管理员开启双重验证</li>
+            <li>员工权限按职责分配</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="decision">
+        <h3>现在最先需要双方确认的 8 项资料</h3>
+        <ol>
+          <li>英文品牌名和域名候选</li>
+          <li>公司主体及可用收款账户</li>
+          <li>目标客户类型和首发应用场景</li>
+          <li>10-20 个首发 SKU</li>
+          <li>产品价格、规格和包装数据</li>
+          <li>产品、工厂、加工和包装图片</li>
+          <li>短料与长料的物流报价规则</li>
+          <li>在线下单与人工询价的边界</li>
+        </ol>
+      </div>
+
+      <p class="footnote" style="margin-top: 10mm;">结论：先用 Shopify 托管能力完成最小可售版本，不单独采购云服务器。真实业务跑通后，再根据自动报价、ERP 或 CAD 处理需求决定是否增加后端服务。</p>
+    </section>
+  </main>
+</body>
+</html>

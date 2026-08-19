@@ -56,6 +56,20 @@ test("PDP option pricing reaches the modal cart", async ({ page }) => {
   await expect(dialog).toBeHidden();
 });
 
+test("PDP quantity control keeps its columns inside the outer border", async ({ page }) => {
+  await page.goto("/products/skiff-console");
+
+  const bounds = await page.locator(".pdp-quantity").evaluate((root) => {
+    const rootRight = root.getBoundingClientRect().right;
+    const children = Array.from(root.children).map((child) => child.getBoundingClientRect());
+    return { rootRight, childRight: children.at(-1)?.right ?? 0 };
+  });
+
+  expect(bounds.childRight).toBeLessThanOrEqual(bounds.rootRight);
+  await page.getByRole("button", { name: "Increase quantity", exact: true }).click();
+  await expect(page.getByRole("spinbutton", { name: "Quantity", exact: true })).toHaveValue("2");
+});
+
 test("RFQ validates and announces a prototype success", async ({ page }) => {
   await page.goto("/rfq?project=sideboard&scope=Three%20closed%20bays%20for%20a%20living%20room%20wall%20with%20cable%20access%20at%20the%20rear.");
   await page.getByLabel(/^Name/).fill("Alex Morgan");
